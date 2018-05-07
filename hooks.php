@@ -6,7 +6,7 @@
  * @file        hooks.php
  * @package     solutedns_aria
  *
- * Copyright (c) 2017 NetDistrict
+ * Copyright (c) 2018 NetDistrict
  * All rights reserved.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
@@ -31,6 +31,7 @@ if (!defined("WHMCS")) {
 }
 
 use WHMCS\Database\Capsule;
+use solutedns\System\db;
 
 /**
  * Admin Tab Field
@@ -61,7 +62,7 @@ add_hook('AdminClientServicesTabFields', 1, function($vars) {
 	} else {
 		$class = 'text-danger';
 	}
-	
+
 	return [
 		'Reverse IP Assignment' => "Found <strong class=\"$class\">$c</strong> IP addresses of which <strong class=\"$class\">$i</strong> are assigned for reverse DNS Management.",
 	];
@@ -97,7 +98,7 @@ function SDNS_ARIA_update($vars) {
 
 	// Get assigned IP's
 	$tbldata = Capsule::table('tblhosting')->where('id', $vars['serviceid'])->where('domainstatus', 'Active')->first();
-	$ipList = explode(PHP_EOL, $tbldata->assignedips);
+	$ipList = preg_split('/\r\n|\r|\n/', $tbldata->assignedips);
 
 	// Handle each IP
 	foreach ($ipList as $ip) {
@@ -106,7 +107,6 @@ function SDNS_ARIA_update($vars) {
 
 		// Validate and reverse IPv6
 		if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-
 			$addr = inet_pton($ip);
 			$unpack = unpack('H*hex', $addr);
 			$hex = $unpack['hex'];
@@ -144,25 +144,37 @@ function SDNS_ARIA_update($vars) {
 			else {
 
 				try {
-					$db = remotedb::get($server_id);
+					$db = db::get();
 					$stmt = $db->prepare("SELECT id,content FROM records WHERE name='$arpa' AND type='PTR';");
 					$stmt->execute();
 					$result = $stmt->fetch(PDO::FETCH_ASSOC);
 
 					if ($result) {
 
-						Capsule::table('mod_solutedns_reverse')->insert(
-							[
-								'client_id' => $vars['userid'],
-								'server_id' => $server_id,
-								'record_id' => $result['id'],
-								'ip' => $ip,
-								'hostname' => $result['content'],
-								'last_update' => $time
-							]
-						);
+						$remote_id = Capsule::table('mod_solutedns_reverse')->select('id')->where('record_id', $result['id'])->first();
+
+						if (!$remote_id) {
+
+							Capsule::table('mod_solutedns_reverse')->insert(
+								[
+									'client_id' => $vars['userid'],
+									'server_id' => $server_id,
+									'record_id' => $result['id'],
+									'ip' => $ip,
+									'hostname' => $result['content'],
+									'last_update' => $time
+								]
+							);
+						} else {
+
+							logActivity("ERROR: SoluteDNS - ARIA: Cannot assign reverse record for " . $ip . " because the DNS record is already assigned.", 0);
+						}
+					} else {
+
+						logActivity("ERROR: SoluteDNS - ARIA: Cannot assign reverse record for " . $ip . " because the DNS record does not exists.", 0);
 					}
 				} catch (Exception $e) {
+
 					logActivity("ERROR: SoluteDNS - ARIA: " . $e->getMessage(), 0);
 				}
 			}

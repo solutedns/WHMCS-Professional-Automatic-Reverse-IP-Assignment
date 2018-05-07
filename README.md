@@ -2,7 +2,7 @@
 
 ## SoluteDNS for WHMC ARIA Module
 
-Copyright (C) NetDistrict 2011-2017
+Copyright (C) NetDistrict 2011-2018
 All Rights Reserved
 
 ************************************************
@@ -12,7 +12,6 @@ COMPATIBILITY:
 This module can be used with:
 
  - SoluteDNS for WHMCS - Professional
- - SoluteDNS for WHMCS - Legacy
 
 DOCUMENTATION:
 ----------------------------------------------

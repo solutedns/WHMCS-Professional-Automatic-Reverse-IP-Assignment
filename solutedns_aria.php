@@ -6,7 +6,7 @@
  * @file        
  * @package     solutedns_aria
  *
- * Copyright (c) 2017 NetDistrict
+ * Copyright (c) 2018 NetDistrict
  * All rights reserved.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
@@ -43,16 +43,7 @@ function solutedns_aria_config() {
 		'description' => 'Automatic Reverse IP Assignment for SoluteDNS for WHMCS.',
 		'author' => 'NetDistrict',
 		'language' => 'english',
-		'version' => '1.17.001',
-		'fields' => array(
-            'serverid' => array(
-                'FriendlyName' => 'Server ID',
-                'Type' => 'text',
-                'Size' => '25',
-                'Default' => 1,
-                'Description' => 'Enter the nameserver (cluster) ID which is used for reverse zones.',
-            )
-        )
+		'version' => '1.18.001'
 	);
 }
 
