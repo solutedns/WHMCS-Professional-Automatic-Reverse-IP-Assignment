@@ -124,7 +124,6 @@ function SDNS_ARIA_update($vars) {
 		if ($arpa) {
 
 			$time = time();
-			$server_id = Capsule::table('tbladdonmodules')->where('module', 'solutedns_aria')->where('setting', 'serverid')->value('value');
 			$tbldata = Capsule::table('mod_solutedns_reverse')->where('ip', $ip)->first();
 
 			// Update existing assignment
@@ -135,7 +134,6 @@ function SDNS_ARIA_update($vars) {
 					->update(
 						[
 							'client_id' => $vars['userid'],
-							'server_id' => $server_id,
 							'last_update' => $time,
 						]
 				);
@@ -158,7 +156,6 @@ function SDNS_ARIA_update($vars) {
 							Capsule::table('mod_solutedns_reverse')->insert(
 								[
 									'client_id' => $vars['userid'],
-									'server_id' => $server_id,
 									'record_id' => $result['id'],
 									'ip' => $ip,
 									'hostname' => $result['content'],
